@@ -1,0 +1,19 @@
+{
+  "name": "websocket",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sahil Rathor <sr7015342@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc && nodemon ./dist/server.js",
+    "start": "tsc && node ./dist/server.js"
+  },
+  "dependencies": {
+    "@types/ws": "^8.5.12",
+    "express": "^4.19.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "ws": "^8.18.0"
+  }
+}
