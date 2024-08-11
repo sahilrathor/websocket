@@ -19,6 +19,24 @@ type Members = Record<string, string | string[] | undefined>;  //string[] : empt
 const connections: Connections = {};
 const members: Members = {};
 
+// BROADCAST
+const broadcast = (message: string) => {
+    Object.keys(connections).forEach((uuid) => {
+        const connection = connections[uuid];
+        connection.send(message);
+    });
+};
+
+// SEND TO SPECIFIC
+const send = (from: string, to: string, message: string) => {
+    const connection = connections[to];
+    if (connection) {
+        connection.send(`${members[from]}: ${message}`);
+    } else {
+        console.log(`No connection found for UUID ${to}`);
+    }
+};
+
 // WEBSOCKET SERVER
 const wss = new WebSocketServer({ port: PORT }, () => {
     console.log("Server running on port:", PORT);
@@ -29,22 +47,29 @@ wss.on("connection", (connection: WebSocket, req: IncomingMessage) => {
     // GENERATE A UNIQUE IDENTIFIER (UUID) FOR THE CONNECTION
     const uuid = uuidv4();
 
-    // EXTRACT THE USERNAME FROM THE QUERY PARAMETERS IN THE REQUEST URL
-    const { username } = url.parse(req.url || '', true).query;
+    // EXTRACT THE USERNAME AND 'TO' PARAMETER FROM THE QUERY PARAMETERS IN THE REQUEST URL
+    const { username, all, to } = url.parse(req.url || '', true).query;
 
     // STORE THE CONNECTION AND ITS ASSOCIATED USERNAME
     connections[uuid] = connection;
     members[uuid] = username;
-    console.log('members', members)
+    console.log('members', members);
 
-    // SEND CONNECTION DETAILS
+    // SEND CONNECTION DETAILS TO THE CLIENT
     const connectionDetails: ConnectionDetails = { username, id: uuid };
     connection.send(JSON.stringify(connectionDetails));
 
     // HANDLE INCOMING MESSAGES
     connection.on("message", (data: Buffer) => {
-        console.log(`${username} :`, data.toString());
-        connection.send("Server response");
+        const message = data.toString();
+
+        if (all) {
+            broadcast(message)
+        } else if (to) {
+            send(uuid, to as string, message);
+        } else {
+            console.log(`${username}: ${message}`);
+        }
     });
 
     // HANDLE CONNECTION CLOSE
