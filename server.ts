@@ -2,8 +2,10 @@ import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from 'url';
 import { IncomingMessage } from 'http';
+import dotenv from 'dotenv'
 
-const PORT = 8000;
+dotenv.config();
+const PORT = Number(process.env.PORT) || 8000;
 
 // INTERFACE REPRESENTING CONNECTION DETAILS
 interface ConnectionDetails {
@@ -74,7 +76,7 @@ wss.on("connection", (connection: WebSocket, req: IncomingMessage) => {
 
     // HANDLE CONNECTION CLOSE
     connection.on("close", () => {
-        console.log(`Connection closed: UUID ${uuid}`);
+        console.log(`Connection closed for ID : ${uuid}`);
 
         // REMOVE THE CONNECTION AND MEMBER
         delete connections[uuid];
